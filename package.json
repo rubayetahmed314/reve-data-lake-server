@@ -23,6 +23,7 @@
     "moment": "^2.29.1",
     "morgan": "^1.10.0",
     "mysql2": "^2.3.3",
+    "node-tesseract-ocr": "^2.2.1",
     "papaparse": "^5.3.1",
     "png-js": "^1.0.0",
     "python-shell": "^3.0.1",

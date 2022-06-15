@@ -8,6 +8,8 @@ const encoder = new TextEncoder("utf-8");
 const decoder = new TextDecoder("utf-8");
 const utf8 = require("utf8");
 
+const tesseract = require("node-tesseract-ocr");
+
 let filename = null;
 let ocrData = "";
 
@@ -155,33 +157,50 @@ exports.convert = (req, res) => {
     dataURLtoFile(req.body.image);
 
     try {
-        const pythonProcess = spawn("python", [
-            "first_ocr.py",
-            filename,
-            req.body.psm_mode,
-        ]);
+        // const pythonProcess = spawn("python", [
+        //     "first_ocr.py",
+        //     filename,
+        //     req.body.psm_mode,
+        // ]);
 
-        pythonProcess.stdout.on("data", data => {
-            // Do something with the data returned from python script
-            // console.log(`stdout: ${data}`);
-        });
+        // pythonProcess.stdout.on("data", data => {
+        //     // Do something with the data returned from python script
+        //     // console.log(`stdout: ${data}`);
+        // });
 
-        pythonProcess.stderr.on("data", data => {
-            console.log(`stderr: ${data}`);
-            res.json({ status: "ERROR" });
-        });
+        // pythonProcess.stderr.on("data", data => {
+        //     console.log(`stderr: ${data}`);
+        //     res.json({ status: "ERROR" });
+        // });
 
-        pythonProcess.on("close", code => {
-            // res.json({ status: "DONE" });
-            console.log(`child process exited with code: ${code}`);
-            fs.readFile("ocr.txt", 'utf8', function(err, data) {
-                if (err) throw err;
-                console.log(data);
-                res.json({
-                    result: data,
+        // pythonProcess.on("close", code => {
+        //     // res.json({ status: "DONE" });
+        //     console.log(`child process exited with code: ${code}`);
+        //     fs.readFile("ocr.txt", 'utf8', function(err, data) {
+        //         if (err) throw err;
+        //         console.log(data);
+        //         res.json({
+        //             result: data,
+        //         });
+        //       });
+        // });
+        let config = {
+            lang: "ben",
+            oem: 1,
+            psm: req.body.psm_mode,
+          }
+          
+          tesseract
+            .recognize(filename, config)
+            .then((text) => {
+              console.log("Result:", text)
+              res.json({
+                    result: text
                 });
-              });
-        });
+            })
+            .catch((error) => {
+              console.log(error.message)
+            });
     } catch (err) {
         console.error("Error:", err);
         res.send("Error " + err);
