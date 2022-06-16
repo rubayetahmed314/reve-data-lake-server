@@ -128,8 +128,9 @@ exports.postData = async function (req, res) {
             password: "12345",
             database: "sd09_tts_data",
         });
-        const [rows, fields] = await conn.execute(
-            `INSERT INTO data_offline VALUES ('${req.body.content}', '${req.body.reference}')`
+        // let table_name = req.body.ocr ? 'data_ocr' : 'data_offline';
+        const [rows, fields] = await conn.execute(req.body.ocr?
+            `INSERT INTO data_ocr (predicted_content, corrected_content, reference) VALUES ('${req.body.content}', 'Not Available Yet', '${req.body.reference}')`:`INSERT INTO data_offline VALUES ('${req.body.content}', '${req.body.reference}')`
         );
         const results = { users: rows };
         // res.render("pages/index", results);

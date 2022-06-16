@@ -25,8 +25,8 @@ const app = express();
 app.use(morgan("dev"));
 // app.use(bodyParser.json());
 
-app.use(bodyParser.json({ limit: "5mb" }));
-app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
+app.use(bodyParser.json({ limit: "15mb" }));
+app.use(bodyParser.urlencoded({ limit: "15mb", extended: true }));
 // app.use(bodyParser.urlencoded({ limit: "1mb", extended: true, parameterLimit: 50000 }));
 
 // app.use(bodyParser.text({ limit: '200mb' }));
