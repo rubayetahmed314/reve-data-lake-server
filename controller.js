@@ -130,7 +130,7 @@ exports.postData = async function (req, res) {
         });
         // let table_name = req.body.ocr ? 'data_ocr' : 'data_offline';
         const [rows, fields] = await conn.execute(req.body.ocr?
-            `INSERT INTO data_ocr (predicted_content, corrected_content, reference) VALUES ('${req.body.content}', 'Not Available Yet', '${req.body.reference}')`:`INSERT INTO data_offline VALUES ('${req.body.content}', '${req.body.reference}')`
+            `INSERT INTO data_ocr (predicted_content, corrected_content, reference) VALUES ('${req.body.predictedText}', '${req.body.content}', '${req.body.reference}')`:`INSERT INTO data_offline VALUES ('${req.body.content}', '${req.body.reference}')`
         );
         const results = { users: rows };
         // res.render("pages/index", results);
@@ -186,7 +186,7 @@ exports.convert = (req, res) => {
         //       });
         // });
         let config = {
-            lang: "ben",
+            lang: req.body.lang,
             oem: 1,
             psm: req.body.psm_mode,
           }
