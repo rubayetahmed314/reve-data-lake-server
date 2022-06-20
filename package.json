@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "adaptive-threshold": "^1.2.0",
     "body-parser": "^1.19.0",
     "buffer": "^6.0.3",
     "cookie-parser": "^1.4.5",
@@ -19,6 +20,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-validator": "^5.3.1",
+    "get-pixels": "^3.3.3",
     "jimp": "^0.16.1",
     "moment": "^2.29.1",
     "morgan": "^1.10.0",
@@ -27,6 +29,7 @@
     "papaparse": "^5.3.1",
     "png-js": "^1.0.0",
     "python-shell": "^3.0.1",
+    "save-pixels": "^2.3.6",
     "sharp": "^0.29.3",
     "utf8": "^3.0.0"
   }

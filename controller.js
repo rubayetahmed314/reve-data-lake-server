@@ -2,6 +2,10 @@ const mysql = require("mysql2/promise");
 const sharp = require("sharp");
 
 const fs = require("fs");
+const savePixels = require('save-pixels')
+const getPixels = require('get-pixels')
+const adaptiveThreshold = require('adaptive-threshold')
+
 const { spawn } = require("child_process");
 
 const encoder = new TextEncoder("utf-8");
@@ -69,7 +73,7 @@ function bytesToString(bytes) {
     return String.fromCharCode.apply(null, chars);
 }
 
-function dataURLtoFile(dataurl) {
+function dataURLtoFile(dataurl, req, res) {
     let arr = dataurl.split(","),
         mime = arr[0].match(/:(.*?);/)[1].split("/")[1],
         bstr = atob(arr[1]),
@@ -77,6 +81,7 @@ function dataURLtoFile(dataurl) {
         u8arr = new Uint8Array(n);
 
     filename = `input.${mime}`;
+    // filename = `input.png`;
     console.log("File Name:", filename);
 
     while (n--) {
@@ -88,11 +93,70 @@ function dataURLtoFile(dataurl) {
     sharp(u8arr)
         // .resize(32, 32)
         .grayscale()
-        .toFile(filename, (err, info) => {
-            if (err) {
-                console.log(err.message);
+        .toFile(filename)
+        .then(info => {
+            console.log("Sharp Output:", info);
+            /*
+            getPixels(filename, (err, pixels) => {
+                if (err) {
+                  console.error(err)
+                  return
+                }
+                let thresholded = adaptiveThreshold(pixels, {size:20, compensation:15})
+                savePixels(thresholded, `${mime}`).pipe(fs.createWriteStream(`thresholded.${mime}`))
+            });
+            */
+            try {
+                // const pythonProcess = spawn("python", [
+                //     "first_ocr.py",
+                //     filename,
+                //     req.body.psm_mode,
+                // ]);
+        
+                // pythonProcess.stdout.on("data", data => {
+                //     // Do something with the data returned from python script
+                //     // console.log(`stdout: ${data}`);
+                // });
+        
+                // pythonProcess.stderr.on("data", data => {
+                //     console.log(`stderr: ${data}`);
+                //     res.json({ status: "ERROR" });
+                // });
+        
+                // pythonProcess.on("close", code => {
+                //     // res.json({ status: "DONE" });
+                //     console.log(`child process exited with code: ${code}`);
+                //     fs.readFile("ocr.txt", 'utf8', function(err, data) {
+                //         if (err) throw err;
+                //         console.log(data);
+                //         res.json({
+                //             result: data,
+                //         });
+                //       });
+                // });
+                let config = {
+                    lang: req.body.lang,
+                    oem: 1,
+                    psm: req.body.psm_mode,
+                  }
+                  
+                  tesseract
+                    .recognize(filename, config)
+                    .then((text) => {
+                      console.log("Result:", text)
+                      res.json({
+                            result: text
+                        });
+                    })
+                    .catch((error) => {
+                      console.log("Tess Error:", error.message)
+                    });
+            } catch (err) {
+                console.error("Error:", err);
+                res.send("Error " + err);
             }
-        });
+        })
+        .catch(err => { console.log("Error:", err); return "Sharp Error!";});
 }
 
 exports.getData = async function (req, res) {
@@ -130,7 +194,7 @@ exports.postData = async function (req, res) {
         });
         // let table_name = req.body.ocr ? 'data_ocr' : 'data_offline';
         const [rows, fields] = await conn.execute(req.body.ocr?
-            `INSERT INTO data_ocr (predicted_content, corrected_content, reference) VALUES ('${req.body.predictedText}', '${req.body.content}', '${req.body.reference}')`:`INSERT INTO data_offline VALUES ('${req.body.content}', '${req.body.reference}')`
+            `INSERT INTO data_ocr (predicted_content, corrected_content, reference) VALUES ('${req.body.predictedText}', '${req.body.content}', '${req.body.reference == ''?"OCR":req.body.reference}')`:`INSERT INTO data_offline VALUES ('${req.body.content}', '${req.body.reference}')`
         );
         const results = { users: rows };
         // res.render("pages/index", results);
@@ -145,7 +209,7 @@ exports.postData = async function (req, res) {
 };
 
 exports.convert = (req, res) => {
-    console.log("Request: ", req.body);
+    // console.log("Request: ", req.body);
 
     /*
         let base64Data = req.body.image.replace(/^data:image\/jpeg;base64,/, "");
@@ -155,55 +219,5 @@ exports.convert = (req, res) => {
         });
     */
 
-    dataURLtoFile(req.body.image);
-
-    try {
-        // const pythonProcess = spawn("python", [
-        //     "first_ocr.py",
-        //     filename,
-        //     req.body.psm_mode,
-        // ]);
-
-        // pythonProcess.stdout.on("data", data => {
-        //     // Do something with the data returned from python script
-        //     // console.log(`stdout: ${data}`);
-        // });
-
-        // pythonProcess.stderr.on("data", data => {
-        //     console.log(`stderr: ${data}`);
-        //     res.json({ status: "ERROR" });
-        // });
-
-        // pythonProcess.on("close", code => {
-        //     // res.json({ status: "DONE" });
-        //     console.log(`child process exited with code: ${code}`);
-        //     fs.readFile("ocr.txt", 'utf8', function(err, data) {
-        //         if (err) throw err;
-        //         console.log(data);
-        //         res.json({
-        //             result: data,
-        //         });
-        //       });
-        // });
-        let config = {
-            lang: req.body.lang,
-            oem: 1,
-            psm: req.body.psm_mode,
-          }
-          
-          tesseract
-            .recognize(filename, config)
-            .then((text) => {
-              console.log("Result:", text)
-              res.json({
-                    result: text
-                });
-            })
-            .catch((error) => {
-              console.log(error.message)
-            });
-    } catch (err) {
-        console.error("Error:", err);
-        res.send("Error " + err);
-    }
+    dataURLtoFile(req.body.image, req, res);
 };
