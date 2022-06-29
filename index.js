@@ -7,6 +7,18 @@ const cors = require("cors");
 const expressValidator = require("express-validator");
 require("dotenv").config();
 
+module.exports = {
+    devServer: {
+      watchOptions: {
+        ignored: [
+          path.resolve(__dirname, 'dist'),
+          path.resolve(__dirname, 'node_modules'),
+          path.resolve(__dirname, 'images') // image folder path
+        ]
+      }
+    }, 
+}
+
 // const corsOptions = {
 //     origin: "*",
 //     credentials: true, //access-control-allow-credentials:true

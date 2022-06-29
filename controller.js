@@ -93,7 +93,7 @@ function dataURLtoFile(dataurl, req, res) {
     sharp(u8arr)
         // .resize(32, 32)
         .grayscale()
-        .toFile(filename)
+        .toFile(`./images/${filename}`)
         .then(info => {
             console.log("Sharp Output:", info);
             /*
@@ -141,7 +141,7 @@ function dataURLtoFile(dataurl, req, res) {
                   }
                   
                   tesseract
-                    .recognize(filename, config)
+                    .recognize(`./images/${filename}`, config)
                     .then((text) => {
                       console.log("Result:", text)
                       res.json({
@@ -194,7 +194,7 @@ exports.postData = async function (req, res) {
         });
         // let table_name = req.body.ocr ? 'data_ocr' : 'data_offline';
         const [rows, fields] = await conn.execute(req.body.ocr?
-            `INSERT INTO data_ocr (predicted_content, corrected_content, reference) VALUES ('${req.body.predictedText}', '${req.body.content}', '${req.body.reference == ''?"OCR":req.body.reference}')`:`INSERT INTO data_offline VALUES ('${req.body.content}', '${req.body.reference}')`
+            `INSERT INTO data_ocr (predicted_content, corrected_content, reference) VALUES ('${req.body.predictedText}', '${req.body.content}', '${req.body.reference == ''?"OCR":req.body.reference}')`:`INSERT INTO data_offline (content, reference) VALUES ('${req.body.content}', '${req.body.reference}')`
         );
         const results = { users: rows };
         // res.render("pages/index", results);
